@@ -8,9 +8,9 @@ from transformers import RobertaTokenizerFast, RobertaForSequenceClassification
 from scipy.sparse import hstack
 from langdetect import detect, DetectorFactory, LangDetectException
 
-# -------------------------------------------------
+# ------------------------------------------------
 # AYARLAR
-# -------------------------------------------------
+# ------------------------------------------------
 MIN_WORDS = 30
 ENGLISH_RATIO_THRESHOLD = 0.80
 DetectorFactory.seed = 0
