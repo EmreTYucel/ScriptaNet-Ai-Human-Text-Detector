@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ben Gerçek Miyim?</title>
+
+  <!-- Donut grafik için Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(1200px 700px at 50% 20%, rgba(168, 85, 247, .35), transparent 60%),
+        radial-gradient(900px 600px at 20% 70%, rgba(236, 72, 153, .22), transparent 60%),
+        linear-gradient(180deg, #0b0420 0%, #120433 55%, #0b0420 100%);
+      z-index: -1;
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 36px auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .logo-circle {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 14px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 44px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, .95), rgba(236, 72, 153, .95));
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .45);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 64px;
+      letter-spacing: .5px;
+      color: rgba(236, 72, 153, .95);
+      text-shadow: 0 10px 40px rgba(236, 72, 153, .15);
+    }
+
+    .subtitle {
+      margin: 10px 0 28px;
+      color: rgba(255, 255, 255, .75);
+      font-size: 18px;
+    }
+
+    /* ---- LAYOUT: Sol (metin) + Sağ (average donut) ---- */
+    .grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      margin: 0 auto;
+      text-align: left;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-title {
+      font-weight: 800;
+      color: rgba(255, 255, 255, .88);
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 240px;
+      resize: vertical;
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      background: rgba(0, 0, 0, .25);
+      color: rgba(255, 255, 255, .9);
+      outline: none;
+      font-size: 15px;
+    }
+
+    textarea::placeholder {
+      color: rgba(255, 255, 255, .45);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .06s ease;
+    }
+
+    button:active {
+      transform: scale(.99);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(168, 85, 247, 1));
+      color: #fff;
+    }
+
+    .danger {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 1), rgba(236, 72, 153, 1));
+      color: #fff;
+    }
+
+    .loading {
+      margin-top: 14px;
+      color: rgba(255, 255, 255, .8);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    .banner-title {
+      text-align: center;
+      font-weight: 900;
+      font-size: 22px;
+      color: rgba(251, 191, 36, .95);
+      margin-bottom: 14px;
+    }
+
+    .rows {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .10);
+    }
+
+    .row-left {
+      font-weight: 900;
+      color: rgba(255, 255, 255, .92);
+    }
+
+    .row-right {
+      font-weight: 900;
+    }
+
+    .row-right.ai {
+      color: rgba(244, 63, 94, .95);
+    }
+
+    .row-right.human {
+      color: rgba(34, 197, 94, .95);
+    }
+
+    .banner-desc {
+      text-align: center;
+      margin-top: 12px;
+      color: rgba(255, 255, 255, .65);
+      font-style: italic;
+    }
+
+    .error {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, .15);
+      border: 1px solid rgba(239, 68, 68, .35);
+      color: rgba(255, 255, 255, .9);
+    }
+
+    /* ---- AVERAGE PANEL ---- */
+    .avg-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .avg-subtitle {
+      color: rgba(255, 255, 255, .70);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .avg-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .10);
+      font-weight: 900;
+    }
+
+    .avg-metric .left {
+      color: rgba(255, 255, 255, .9);
+    }
+
+    .avg-metric .right.ai {
+      color: rgba(244, 63, 94, .95);
+    }
+
+    .avg-metric .right.human {
+      color: rgba(34, 197, 94, .95);
+    }
+
+    .chart-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0 2px;
+    }
+
+    #avgDonut {
+      width: 100%;
+      max-width: 320px;
+      max-height: 320px;
+    }
+
+    .weights {
+      margin-top: 6px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, .70);
+    }
+
+    .weights code {
+      background: rgba(0, 0, 0, .22);
+      border: 1px solid rgba(255, 255, 255, .14);
+      padding: 2px 7px;
+      border-radius: 999px;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 720px) {
+      h1 {
+        font-size: 44px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <main class="wrap">
+    <div class="logo-circle">🤖</div>
+    <h1>Ben Gerçek Miyim?</h1>
+    <p class="subtitle">Metnin yapay zeka mı yoksa insan tarafından mı yazıldığını tespit edin</p>
+
+    <section class="grid">
+      <!-- SOL: Metin + Model Sonuçları -->
+      <div class="card">
+        <div class="card-title">✍ Metni Buraya Yapıştırın</div>
+
+        <textarea id="text" placeholder="Analiz etmek istediğiniz metni buraya yapıştırın..."></textarea>
+
+        <div class="actions">
+          <button id="analyze" class="primary">🔎 Analiz Et</button>
+          <button id="clear" class="danger">🗑 Temizle</button>
+        </div>
+
+        <div id="loading" class="loading hidden">Analiz ediliyor...</div>
+
+        <div id="resultBox" class="result hidden">
+          <div id="bannerTitle" class="banner-title"></div>
+          <div id="rows" class="rows"></div>
+          <div id="bannerDesc" class="banner-desc"></div>
+        </div>
+
+        <div id="errorBox" class="error hidden"></div>
+      </div>
+
+      <!-- SAĞ: Ağırlıklı Ortalama (Average Donut) -->
+      <div class="card avg-box">
+        <div class="card-title">📊Ortalama Karar</div>
+        <div class="avg-subtitle">
+          ->Farklı modellerin sonuçlarına göre ortalama karar
+        </div>
+
+        <div id="avgMetric" class="avg-metric hidden">
+          <div class="left">Ortalama Sonuç</div>
+          <div id="avgMetricRight" class="right">-</div>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="avgDonut"></canvas>
+        </div>
+
+        <div id="weightsInfo" class="weights hidden"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const textEl = document.getElementById("text");
+    const analyzeBtn = document.getElementById("analyze");
+    const clearBtn = document.getElementById("clear");
+
+    const loading = document.getElementById("loading");
+    const resultBox = document.getElementById("resultBox");
+    const rows = document.getElementById("rows");
+    const bannerTitle = document.getElementById("bannerTitle");
+    const bannerDesc = document.getElementById("bannerDesc");
+    const errorBox = document.getElementById("errorBox");
+
+    // Average UI elements
+    const avgMetric = document.getElementById("avgMetric");
+    const avgMetricRight = document.getElementById("avgMetricRight");
+    const weightsInfo = document.getElementById("weightsInfo");
+    const avgCanvas = document.getElementById("avgDonut");
+
+    let avgChart = null;
+
+    function setHidden(el, hidden) { el.classList.toggle("hidden", hidden); }
+
+    function renderRow(item) {
+      // item: {name, label, ai_pct, human_pct}
+      const isAI = item.label === "AI";
+      const rightText = isAI ? AI (%${item.ai_pct}) : HUMAN (%${item.human_pct});
+      const cls = isAI ? "ai" : "human";
+
+      return `
+        <div class="row">
+          <div class="row-left">${item.name}</div>
+          <div class="row-right ${cls}">${rightText}</div>
+        </div>
+      `;
+    }
+
+    function destroyAvgChart() {
+      if (avgChart) {
+        avgChart.destroy();
+        avgChart = null;
+      }
+    }
+
+    function resetAverageUI() {
+      // metin + sınıflar + weights + chart tamamen sıfırlansın
+      avgMetricRight.textContent = "-";
+      avgMetricRight.classList.remove("ai", "human");
+
+      weightsInfo.innerHTML = "";
+
+      setHidden(avgMetric, true);
+      setHidden(weightsInfo, true);
+
+      destroyAvgChart();
+
+      // (ekstra garanti) canvas temizle
+      const ctx = avgCanvas.getContext("2d");
+      ctx.clearRect(0, 0, avgCanvas.width, avgCanvas.height);
+    }
+
+    function renderAverage(aggregate) {
+      // aggregate: {name:"WeightedAverage", label, ai_pct, human_pct, weights}
+      const label = aggregate.label;
+      const ai = Number(aggregate.ai_pct);
+      const human = Number(aggregate.human_pct);
+
+      // Metric text
+      avgMetricRight.textContent = ${label} (AI %${ai} / HUMAN %${human});
+      avgMetricRight.classList.remove("ai", "human");
+      avgMetricRight.classList.add(label === "AI" ? "ai" : "human");
+
+      setHidden(avgMetric, false);
+
+      // Donut chart
+      const ctx = avgCanvas.getContext("2d");
+      destroyAvgChart();
+
+      avgChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["AI", "Human"],
+          datasets: [{
+            data: [ai, human]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "rgba(255,255,255,.75)" }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const v = context.raw;
+                  return ${context.label}: ${v}%;
+                }
+              }
+            }
+          },
+          cutout: "68%"
+        }
+      });
+    }
+
+    clearBtn.addEventListener("click", () => {
+      textEl.value = "";
+      setHidden(resultBox, true);
+      setHidden(errorBox, true);
+
+      // Ağırlıklı ortalama oranları da sıfırlansın
+      resetAverageUI();
+    });
+
+    analyzeBtn.addEventListener("click", async () => {
+      setHidden(errorBox, true);
+      setHidden(resultBox, true);
+
+      // yeni analiz öncesi average panel reset
+      resetAverageUI();
+
+      const text = textEl.value || "";
+      if (text.trim().length < 3) {
+        errorBox.textContent = "Lütfen analiz edilecek bir metin girin.";
+        setHidden(errorBox, false);
+        return;
+      }
+
+      setHidden(loading, false);
+
+      try {
+        const res = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          const raw = await res.text();
+          throw new Error("Sunucu JSON döndürmedi. İlk kısım:\n" + raw.slice(0, 200));
+        }
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Hata oluştu.");
+
+        // banner + model rows
+        bannerTitle.textContent = data.banner.title;
+        bannerDesc.textContent = data.banner.desc;
+        rows.innerHTML = (data.results || []).map(renderRow).join("");
+        setHidden(resultBox, false);
+
+        // weighted average
+        if (data.aggregate) {
+          renderAverage(data.aggregate);
+        }
+
+      } catch (e) {
+        errorBox.textContent = e.message;
+        setHidden(errorBox, false);
+      } finally {
+        setHidden(loading, true);
+      }
+    });
+  </script>
+</body>
+
+</html>
