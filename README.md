@@ -422,7 +422,6 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 
 Sorularınız veya önerileriniz için:
 - GitHub Issues: [Yeni Issue Aç](https://github.com/EmreTYucel/ScriptaNet-Ai-Human-Text-Detector/issues)
-- Email: [Projenize email ekleyin]
 
 ## 🙏 Teşekkürler
 
