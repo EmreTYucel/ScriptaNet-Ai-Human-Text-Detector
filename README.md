@@ -416,8 +416,7 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 
 ## 👥 Ekip
 
-- **Proje Sahibi**: EmreTYucel
-- **Katılımcılar**: [Katkıda bulunanlar için teşekkürler!]
+- **Proje Ekibi**: EmreTYucel Beratgultekin nisanurrkarduz 
 
 ## 📞 İletişim
 
